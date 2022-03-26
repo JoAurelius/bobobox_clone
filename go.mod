@@ -1,3 +1,5 @@
-module tutorial.sql.dev/app
+module bobobox_clone
 
 go 1.17
+
+require github.com/gorilla/mux v1.8.0
