@@ -8,8 +8,7 @@ import (
 )
 
 func connect() *gorm.DB {
-	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-	dsn := "user:pass@tcp(127.0.0.1:3306)/db_bobobox?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:@tcp(localhost:3306)/db_bobobox?parseTime=true&loc=Asia%2fJakarta"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {

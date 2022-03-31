@@ -9,3 +9,15 @@ type Promo struct {
 	PromoCreated    string  `json:"promo_created"`
 	PromoEndDate    string  `json:"promo_end_date"`
 }
+
+type PromoResponse struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+	Data    Promo  `json:"data"`
+}
+
+type PromosResponses struct {
+	Status  int     `json:"status"`
+	Message string  `json:"message"`
+	Data    []Promo `json:"data"`
+}

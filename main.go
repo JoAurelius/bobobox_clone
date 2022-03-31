@@ -16,6 +16,7 @@ func main() {
 	r.HandleFunc("/register", controller.Register).Methods("POST")
 	r.HandleFunc("/login", controller.Login).Methods("POST")
 	r.HandleFunc("/logout", controller.Logout).Methods("POST")
+
 	r.HandleFunc("/members/{member-id}/profile", controller.GetMemberProfile).Methods("GET")
 	r.HandleFunc("/members/{member-id}/edit-profile", controller.UpdateMemberProfile).Methods("POST")
 
@@ -26,6 +27,7 @@ func main() {
 	r.HandleFunc("/promo/{promo-code}", controller.DeletePromo).Methods("DELETE")
 
 	// Hotel
+
 	r.HandleFunc("/room-types/{room-type-id}/hotels", controller.GetHotelsByRoomType).Methods("GET")
 	r.HandleFunc("/hotel", controller.InsertHotel).Methods("POST")
 	r.HandleFunc("/hotel/{hotel-id}", controller.UpdateHotel).Methods("PUT")
