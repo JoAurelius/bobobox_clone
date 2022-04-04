@@ -34,9 +34,8 @@ func SendModelsResponse(w http.ResponseWriter, s int, m []model.Promo) {
 	json.NewEncoder(w).Encode(response)
 }
 
-//belum selesai,masih diulik
+//custom response sudah bisa dipakai
 func SendCustomResponse(w http.ResponseWriter, data map[string]interface{}) {
-	marshalledData, _ := json.Marshal(data)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(marshalledData)
+	json.NewEncoder(w).Encode(data)
 }
