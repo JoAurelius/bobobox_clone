@@ -6,12 +6,6 @@ import (
 	"net/http"
 )
 
-type CustomResponse struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
-	Data    []byte `json:data`
-}
-
 func SendResponse(w http.ResponseWriter, s int, m string) {
 	var response model.Response
 	response.Status = s
@@ -41,17 +35,8 @@ func SendModelsResponse(w http.ResponseWriter, s int, m []model.Promo) {
 }
 
 //belum selesai,masih diulik
-func SendCustomResponse(w http.ResponseWriter, s int, m string, data string) {
-	dat, _ := json.Marshal(`User{
-		FirstName: "Lane",
-		BirthYear: 1990,
-		Email:     "example@gmail.com",
-	}`)
-	var response CustomResponse
-	response.Status = s
-	response.Message = m
-	// marshalledData, _ := json.Marshal(data)
-	response.Data = dat
+func SendCustomResponse(w http.ResponseWriter, data map[string]interface{}) {
+	marshalledData, _ := json.Marshal(data)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(marshalledData)
 }
