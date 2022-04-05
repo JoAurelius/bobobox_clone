@@ -11,9 +11,9 @@ func GetAllPromos(w http.ResponseWriter, r *http.Request) {
 	var promos []model.Promo
 	db.Select("promo_code").Find(&promos)
 	if len(promos) > 1 {
-		SendPromosResponse(w, http.StatusOK, promos)
+		// SendPromosResponse(w, http.StatusOK, promos)
 	} else if len(promos) == 1 {
-		SendPromoResponse(w, http.StatusOK, promos[0])
+		// SendPromoResponse(w, http.StatusOK, promos[0])
 	} else {
 		//send error response
 		SendGeneralResponse(w, http.StatusNoContent, "No Promo Found")
