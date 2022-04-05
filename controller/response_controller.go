@@ -7,7 +7,7 @@ import (
 )
 
 func SendResponse(w http.ResponseWriter, s int, m string) {
-	var response model.Response
+	var response model.GeneralResponse
 	response.Status = s
 	response.Message = m
 	w.Header().Set("Content-Type", "application/json")
