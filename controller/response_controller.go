@@ -34,8 +34,34 @@ func SendModelsResponse(w http.ResponseWriter, s int, m []model.Promo) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func SendTransactionResponse(w http.ResponseWriter, s int, m model.Transaction) {
+	var response model.TransactionResponse
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func SendTransactionsResponse(w http.ResponseWriter, s int, m []model.Transaction) {
+	var response model.TransactionsResponses
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 //custom response sudah bisa dipakai
 func SendCustomResponse(w http.ResponseWriter, data map[string]interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
+}
+
+func SendGeneralResponse(w http.ResponseWriter, status int, message string) {
+	var response model.GeneralResponse
+	response.Status = status
+	response.Message = message
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
