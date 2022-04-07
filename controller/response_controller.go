@@ -14,7 +14,7 @@ func SendResponse(w http.ResponseWriter, s int, m string) {
 	json.NewEncoder(w).Encode(response)
 }
 
-//belum selesai,masih diulik
+//Respon untuk model
 func SendModelResponse(w http.ResponseWriter, s int, m model.Promo) {
 	var response model.PromoResponse
 	response.Status = s
@@ -24,7 +24,6 @@ func SendModelResponse(w http.ResponseWriter, s int, m model.Promo) {
 	json.NewEncoder(w).Encode(response)
 }
 
-//belum selesai,masih diulik
 func SendModelsResponse(w http.ResponseWriter, s int, m []model.Promo) {
 	var response model.PromosResponses
 	response.Status = s
@@ -34,6 +33,7 @@ func SendModelsResponse(w http.ResponseWriter, s int, m []model.Promo) {
 	json.NewEncoder(w).Encode(response)
 }
 
+//Respon untuk transaksi
 func SendTransactionResponse(w http.ResponseWriter, s int, m model.Transaction) {
 	var response model.TransactionResponse
 	response.Status = s
@@ -52,12 +52,13 @@ func SendTransactionsResponse(w http.ResponseWriter, s int, m []model.Transactio
 	json.NewEncoder(w).Encode(response)
 }
 
-//custom response sudah bisa dipakai
+//respon dengan custom message
 func SendCustomResponse(w http.ResponseWriter, data map[string]interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
 
+//respon tanpa data
 func SendGeneralResponse(w http.ResponseWriter, status int, message string) {
 	var response model.GeneralResponse
 	response.Status = status
