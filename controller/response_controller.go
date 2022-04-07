@@ -52,6 +52,26 @@ func SendTransactionsResponse(w http.ResponseWriter, s int, m []model.Transactio
 	json.NewEncoder(w).Encode(response)
 }
 
+
+//Respon untuk transaksi
+func SendHotelResponse(w http.ResponseWriter, s int, m model.Hotel) {
+	var response model.HotelResponse
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func SendHotelsResponse(w http.ResponseWriter, s int, m []model.Hotel) {
+	var response model.HotelsResponses
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 //respon dengan custom message
 func SendCustomResponse(w http.ResponseWriter, data map[string]interface{}) {
 	w.Header().Set("Content-Type", "application/json")
