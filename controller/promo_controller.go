@@ -73,7 +73,30 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertPromo(w http.ResponseWriter, r *http.Request) {
-
+	db := connect()
+	var promo model.Promo
+	err := r.ParseForm()
+	if err != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Parse Form Failed")
+		return
+	}
+	promo.PromoCode := r.Form.Get("promo-code")
+	promo.PromoTitle = r.Form.Get("promo-title")
+	promo.PromoDesc = r.Form.Get("promo-desc")
+	promoPercentage := r.Form.Get("promo-percentage")
+	promoPercentage, _ := strconv.ParseFloat(promoPercentage, 32)
+	promo.PromoPercentage = float32(promoPercentage)
+	promoMax := r.Form.Get("promo-max")
+	promoMax, _ := strconv.Atoi(promoMax)
+	promo.PromoMax = promoMax
+	
+	result := db.Create(&promo)
+	if result.Error != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Insert")
+		return
+	} else {
+		SendGeneralResponse(w, http.StatusOK, "Insert Success! Promo "+promo.PromoCode+" now can be use")
+	}
 }
 
 func DeletePromo(w http.ResponseWriter, r *http.Request) {
