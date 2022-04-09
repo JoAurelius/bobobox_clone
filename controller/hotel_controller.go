@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bobobox_clone/model"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -63,12 +64,11 @@ func UpdateHotel(w http.ResponseWriter, r *http.Request) {
 	if phone != "" {
 		hotel.HotelPhone = phone
 	}
-
 	result := db.Save(&hotel)
 	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Update Success! Hotel "+string(hotel.HotelID)+" updated")
+		SendGeneralResponse(w, http.StatusOK, "Update Success! Hotel "+fmt.Sprintf("%d", hotel.HotelID)+" now updated")
 	} else {
-		SendGeneralResponse(w, http.StatusNoContent, "Error Update")
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Update")
 	}
 }
 

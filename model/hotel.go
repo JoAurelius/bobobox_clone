@@ -1,10 +1,10 @@
 package model
 
 type Hotel struct {
-	HotelID      int    `json:"hotel_id,omitempty"`
+	HotelID      int    `json:"hotel_id,omitempty" gorm:"primaryKey"`
 	HotelName    string `json:"hotel_name,omitempty"`
 	HotelCity    string `json:"hotel_city,omitempty"`
-	HotelAddress string `json:"hotel_Address,omitempty"`
+	HotelAddress string `json:"hotel_address,omitempty"`
 	HotelPhone   string `json:"hotel_phone,omitempty"`
 	// Rooms        []Room `json:"rooms,omitempty"`
 }
