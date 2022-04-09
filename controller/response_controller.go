@@ -6,29 +6,23 @@ import (
 	"net/http"
 )
 
-func SendResponse(w http.ResponseWriter, s int, m string) {
-	var response model.GeneralResponse
-	response.Status = s
-	response.Message = m
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
 //Respon untuk model
-func SendModelResponse(w http.ResponseWriter, s int, m model.Promo) {
+func SendPromoResponse(w http.ResponseWriter, s int, m model.Promo) {
 	var response model.PromoResponse
 	response.Status = s
 	response.Message = "Success"
 	response.Data = m
+	w.WriteHeader(s)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func SendModelsResponse(w http.ResponseWriter, s int, m []model.Promo) {
+func SendPromosResponse(w http.ResponseWriter, s int, m []model.Promo) {
 	var response model.PromosResponses
 	response.Status = s
 	response.Message = "Success"
 	response.Data = m
+	w.WriteHeader(s)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -39,6 +33,7 @@ func SendTransactionResponse(w http.ResponseWriter, s int, m model.Transaction) 
 	response.Status = s
 	response.Message = "Success"
 	response.Data = m
+	w.WriteHeader(s)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -48,10 +43,10 @@ func SendTransactionsResponse(w http.ResponseWriter, s int, m []model.Transactio
 	response.Status = s
 	response.Message = "Success"
 	response.Data = m
+	w.WriteHeader(s)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
-
 
 //Respon untuk transaksi
 func SendHotelResponse(w http.ResponseWriter, s int, m model.Hotel) {
@@ -59,6 +54,7 @@ func SendHotelResponse(w http.ResponseWriter, s int, m model.Hotel) {
 	response.Status = s
 	response.Message = "Success"
 	response.Data = m
+	w.WriteHeader(s)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -68,6 +64,7 @@ func SendHotelsResponse(w http.ResponseWriter, s int, m []model.Hotel) {
 	response.Status = s
 	response.Message = "Success"
 	response.Data = m
+	w.WriteHeader(s)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -79,10 +76,10 @@ func SendCustomResponse(w http.ResponseWriter, data map[string]interface{}) {
 }
 
 //respon tanpa data
-func SendGeneralResponse(w http.ResponseWriter, status int, message string) {
+func SendGeneralResponse(w http.ResponseWriter, s int, m string) {
 	var response model.GeneralResponse
-	response.Status = status
-	response.Message = message
+	response.Status = s
+	response.Message = m
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }

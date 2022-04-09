@@ -2,13 +2,26 @@ package controller
 
 import (
 	"bobobox_clone/model"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
 func GetHotelsByRoomType(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	vars := mux.Vars(r)
+	room_type := vars["room-type"]
+	var hotels []model.Hotel
+	db.Select("hotel_id", "hotel_name", "hotel_city", "hotel_address", "hotel_phone").Where("hotel_id IN (SELECT hotel_id FROM rooms WHERE room_type = ?)", room_type).Find(&hotels)
 
+	if len(hotels) > 0 {
+		SendHotelsResponse(w, http.StatusOK, hotels)
+	} else if len(hotels) == 1 {
+		SendHotelResponse(w, http.StatusOK, hotels[0])
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Get")
+	}
 }
 
 func InsertHotel(w http.ResponseWriter, r *http.Request) {
@@ -63,17 +76,26 @@ func UpdateHotel(w http.ResponseWriter, r *http.Request) {
 	if phone != "" {
 		hotel.HotelPhone = phone
 	}
-
 	result := db.Save(&hotel)
 	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Update Success! Hotel "+string(hotel.HotelID)+" updated")
+		SendGeneralResponse(w, http.StatusOK, "Update Success! Hotel "+fmt.Sprintf("%d", hotel.HotelID)+" now updated")
 	} else {
-		SendGeneralResponse(w, http.StatusNoContent, "Error Update")
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Update")
 	}
 }
 
 func DeleteHotel(w http.ResponseWriter, r *http.Request) {
+	db := connect()
 
+	vars := mux.Vars(r)
+	HotelId := vars["hotel-id"]
+	var hotel = GetHotelById(HotelId, w)
+	result := db.Delete(&hotel)
+	if result.RowsAffected != 0 {
+		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+fmt.Sprintf("%d", hotel.HotelID)+" now deleted")
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Delete")
+	}
 }
 func GetHotelById(hotel_id string, w http.ResponseWriter) model.Hotel {
 	db := connect()
