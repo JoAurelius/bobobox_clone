@@ -73,7 +73,17 @@ func UpdateHotel(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteHotel(w http.ResponseWriter, r *http.Request) {
+	db := connect()
 
+	vars := mux.Vars(r)
+	HotelId := vars["hotel-id"]
+	var hotel = GetHotelById(HotelId, w)
+	result := db.Delete(&hotel)
+	if result.RowsAffected != 0 {
+		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+fmt.Sprintf("%d", hotel.HotelID)+" now deleted")
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Delete")
+	}
 }
 func GetHotelById(hotel_id string, w http.ResponseWriter) model.Hotel {
 	db := connect()
