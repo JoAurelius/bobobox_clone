@@ -32,7 +32,7 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 		SendGeneralResponse(w, http.StatusBadRequest, "Parse Form Failed")
 		return
 	}
-	var promo model.Promo
+	promo := GetPromoByCode(promoCode, w)
 	promoName := r.Form.Get("promo-name")
 	if promoName != "" {
 		promo.PromoCode = promoCode
@@ -80,16 +80,14 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 		SendGeneralResponse(w, http.StatusBadRequest, "Parse Form Failed")
 		return
 	}
-	promo.PromoCode := r.Form.Get("promo-code")
+	promo.PromoCode = r.Form.Get("promo-code")
 	promo.PromoTitle = r.Form.Get("promo-title")
 	promo.PromoDesc = r.Form.Get("promo-desc")
-	promoPercentage := r.Form.Get("promo-percentage")
-	promoPercentage, _ := strconv.ParseFloat(promoPercentage, 32)
+	promoPercentage, _ := strconv.ParseFloat(r.Form.Get("promo-percentage"), 32)
 	promo.PromoPercentage = float32(promoPercentage)
-	promoMax := r.Form.Get("promo-max")
-	promoMax, _ := strconv.Atoi(promoMax)
+	promoMax, _ := strconv.Atoi(r.Form.Get("promo-max"))
 	promo.PromoMax = promoMax
-	
+
 	result := db.Create(&promo)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusBadRequest, "Error Insert")
@@ -100,5 +98,26 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePromo(w http.ResponseWriter, r *http.Request) {
-
+	db := connect()
+	vars := mux.Vars(r)
+	promoCode := vars["promo-code"]
+	promo := GetPromoByCode(promoCode, w)
+	result := db.Delete(&promo)
+	if result.RowsAffected != 0 {
+		SendGeneralResponse(w, http.StatusOK, "Delete Success! Promo "+promo.PromoCode+" now deleted")
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Delete")
+		return
+	}
+}
+func GetPromoByCode(code string, w http.ResponseWriter) model.Promo {
+	db := connect()
+	var promo model.Promo
+	result := db.Where("promo_code = ?", code).First(&promo)
+	if (result.RowsAffected != 0) && (result.Error == nil) {
+		return promo
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Get Promo")
+		return promo
+	}
 }
