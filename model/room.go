@@ -2,7 +2,10 @@ package model
 
 type Room struct {
 	RoomID     int      `json:"room_id,omitempty"`
-	RoomType   RoomType `json:"room_type_id,omitempty"`
+	HotelID    int      `json:"-"`
+	Hotel      Hotel    `json:"hotel,omitempty" gorm:"foreignKey:HotelID;references:HotelID"`
+	RoomTypeID int      `json:"-"`
+	RoomType   RoomType `json:"room_type,omitempty" gorm:"foreignKey:RoomTypeID;references:RoomTypeID"`
 	RoomNumber string   `json:"room_number,omitempty"`
 	RoomStatus string   `json:"room_status,omitempty"`
 }

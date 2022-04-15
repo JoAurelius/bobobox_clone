@@ -11,10 +11,9 @@ import (
 func GetHotelsByRoomType(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	vars := mux.Vars(r)
-	room_type := vars["room-type"]
+	room_type := vars["room-type-id"]
 	var hotels []model.Hotel
-	db.Select("hotel_id", "hotel_name", "hotel_city", "hotel_address", "hotel_phone").Where("hotel_id IN (SELECT hotel_id FROM rooms WHERE room_type = ?)", room_type).Find(&hotels)
-
+	db.Where("hotel_id IN (SELECT hotel_id FROM rooms WHERE room_type_id = ?)", room_type).Find(&hotels)
 	if len(hotels) > 0 {
 		SendHotelsResponse(w, http.StatusOK, hotels)
 	} else if len(hotels) == 1 {
