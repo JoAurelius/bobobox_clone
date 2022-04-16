@@ -9,7 +9,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 func GetTransactionsByMemberId(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +95,7 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	roomTypeId, _ := strconv.Atoi(r.Form.Get("roomTypeId"))
 	hotelId, _ := strconv.Atoi(r.Form.Get("hotelId"))
 	transaction.MemberID, _ = strconv.Atoi(r.Form.Get("memberId"))
-	PromoCode := r.FormValue("address")
+	PromoCode := r.FormValue("promoCode")
 	transaction.CheckinDate = r.Form.Get("checkin")   //format YYYY-MM-DD
 	transaction.CheckoutDate = r.Form.Get("checkout") //format YYYY-MM-DD
 
@@ -120,8 +119,21 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 		SendGeneralResponse(w, http.StatusNoContent, "CheckoutDate is required")
 		return
 	}
+	if transaction.CheckinDate == transaction.CheckoutDate {
+		SendGeneralResponse(w, http.StatusNoContent, "Tanggal tidak valid")
+		return
+	}
 	if PromoCode == "" {
 		transaction.PromoCode = nil
+	} else {
+		var promo model.Promo
+		db.Select("promo_code").Where("promo_code = ?", PromoCode).Find(&promo)
+		if promo.PromoCode != "" {
+			transaction.PromoCode = &PromoCode
+		} else {
+			SendGeneralResponse(w, http.StatusNoContent, "Promo code not available")
+			return
+		}
 	}
 
 	db.Where("room_type_id = ? ", roomTypeId).Find(&roomType)
@@ -140,7 +152,7 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	transaction.TransactionStatus = 1
 	transaction.TransactionDate = time.Now().Format("2006-01-02")
 
-	result := db.Omit(clause.Associations).Create(&transaction)
+	result := db.Create(&transaction)
 
 	if result.RowsAffected != 0 {
 		SendGeneralResponse(w, http.StatusOK, "Insert Success! Transaction "+fmt.Sprintf("%d", transaction.TransactionID)+" has been added")
