@@ -46,6 +46,7 @@ func main() {
 	r.HandleFunc("/room-type/{room-id}", controller.UpdateRoomType).Methods("PUT")
 
 	// Transaction
+	r.HandleFunc("/booking", controller.Booking).Methods("POST")
 	r.HandleFunc("/members/{member-id}/transactions", controller.GetTransactionsByMemberId).Methods("GET")
 	r.HandleFunc("/members/{member-id}/transactions/{transaction-id}", controller.GetTransactionByMemberId).Methods("GET")
 	r.HandleFunc("/promos/{promo-code}/transactions", controller.GetTransactionsByPromoCode).Methods("GET")
