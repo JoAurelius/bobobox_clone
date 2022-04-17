@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/mux"
 	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
@@ -114,9 +115,55 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 func GetMemberProfile(w http.ResponseWriter, r *http.Request) {
 
 }
+func GetMemberById(memberID string, w http.ResponseWriter, r *http.Request) model.Member {
+	db := connect()
+
+	var member model.Member
+	db.Where("member_id = ?", memberID).First(&member)
+
+	if member.MemberID == 0 {
+		SendGeneralResponse(w, http.StatusNoContent, "Member not found")
+	} else {
+		SendMemberResponse(w, http.StatusOK, member)
+	}
+	return member
+}
 
 func UpdateMemberProfile(w http.ResponseWriter, r *http.Request) {
-
+	db := connect()
+	vars := mux.Vars(r)
+	memberID := vars["memberID"]
+	member := GetMemberById(memberID, w, r)
+	err := r.ParseForm()
+	if err != nil {
+		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
+		return
+	}
+	if r.FormValue("name") != "" {
+		member.MemberName = r.FormValue("name")
+	}
+	if r.FormValue("phone") != "" && len(r.FormValue("phone")) == 12 {
+		if _, err := strconv.Atoi(r.FormValue("phone")); err != nil {
+			member.MemberPhone = r.FormValue("phone")
+		}
+	}
+	if r.FormValue("email") != "" {
+		member.MemberEmail = r.FormValue("email")
+	}
+	if len(r.FormValue("password")) > 8 {
+		h := sha1.New()
+		h.Write([]byte(r.FormValue("password")))
+		member.MemberPassword = hex.EncodeToString(h.Sum(nil))
+	}
+	if r.FormValue("profile-picture") != "" {
+		member.MemberProfilePicture = r.FormValue("profile-picture")
+	}
+	result := db.Save(&member)
+	if result.RowsAffected != 0 {
+		SendGeneralResponse(w, http.StatusOK, "Update MemberSuccess")
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Update")
+	}
 }
 
 func SendEmail(email, name string) {
