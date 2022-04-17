@@ -83,3 +83,21 @@ func SendGeneralResponse(w http.ResponseWriter, s int, m string) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+func SendMemberResponse(w http.ResponseWriter, s int, m model.Member) {
+	var response model.MemberResponse
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.WriteHeader(s)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+func SendMembersResponse(w http.ResponseWriter, s int, m []model.Member) {
+	var response model.MembersResponses
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.WriteHeader(s)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
