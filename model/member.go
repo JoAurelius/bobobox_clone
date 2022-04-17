@@ -1,13 +1,12 @@
 package model
 
 type Member struct {
-	ID             int           `json:"member_id,omitempty"`
-	Name           string        `json:"member_name,omitempty"`
-	Phone          string        `json:"member_phone,omitempty"`
-	Email          string        `json:"member_email,omitempty"`
-	Password       string        `json:"member_password,omitempty"`
-	ProfilePicture string        `json:"member_profile_picture,omitempty"`
-	Transactions   []Transaction `json:"transactions,omitempty"`
+	MemberID             int    `json:"member_id,omitempty" gorm:"PRIMARY_KEY;AUTO_INCREMENT;NOT NULL"`
+	MemberName           string `json:"member_name,omitempty"`
+	MemberPhone          string `json:"member_phone,omitempty"`
+	MemberEmail          string `json:"member_email,omitempty"`
+	MemberPassword       string `json:"member_password,omitempty"`
+	MemberProfilePicture string `json:"member_profile_picture,omitempty"`
 }
 
 type MemberResponse struct {

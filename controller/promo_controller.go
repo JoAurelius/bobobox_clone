@@ -3,20 +3,23 @@ package controller
 import (
 	"bobobox_clone/model"
 	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
+	"time"
 )
 
 func GetAllPromos(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	//get all promo
 	var promos []model.Promo
-	db.Select("promo_code").Find(&promos)
-	if len(promos) > 1 {
-		SendPromosResponse(w, http.StatusOK, promos)
-	} else if len(promos) == 1 {
-		SendPromoResponse(w, http.StatusOK, promos[0])
+	db.Find(&promos)
+	if len(promos) >= 1 {
+		for i := 0; i < len(promos); i++ {
+			promos[i] = ConvertPromoTime(promos[i])
+		}
+		if len(promos) == 1 {
+			SendPromoResponse(w, http.StatusOK, promos[0])
+		} else {
+			SendPromosResponse(w, http.StatusOK, promos)
+		}
 	} else {
 		//send error response
 		SendGeneralResponse(w, http.StatusNoContent, "No Promo Found")
@@ -24,100 +27,22 @@ func GetAllPromos(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePromo(w http.ResponseWriter, r *http.Request) {
-	db := connect()
-	vars := mux.Vars(r)
-	promoCode := vars["promo-code"]
-	err := r.ParseForm()
-	if err != nil {
-		SendGeneralResponse(w, http.StatusBadRequest, "Parse Form Failed")
-		return
-	}
-	promo := GetPromoByCode(promoCode, w)
-	promoName := r.Form.Get("promo-name")
-	if promoName != "" {
-		promo.PromoCode = promoCode
-	}
-	promoTitle := r.Form.Get("promo-title")
-	if promoTitle != "" {
-		promo.PromoTitle = promoTitle
-	}
-	promoDescription := r.Form.Get("promo-description")
-	if promoDescription != "" {
-		promo.PromoDesc = promoDescription
-	}
-	promoPercentage := r.Form.Get("promo-percentage")
-	if promoPercentage != "" {
-		promoPercentage, _ := strconv.ParseFloat(promoPercentage, 32)
-		promo.PromoPercentage = float32(promoPercentage)
-	}
-	promoMax := r.Form.Get("promo-max")
-	if promoMax != "" {
-		promoMax, _ := strconv.Atoi(promoMax)
-		promo.PromoMax = promoMax
-	}
-	promoCreated := r.Form.Get("promo-created")
-	if promoCreated != "" {
-		promo.PromoCreated = promoCreated
-	}
-	promoEndDate := r.Form.Get("promo-end-date")
-	if promoEndDate != "" {
-		promo.PromoEndDate = promoEndDate
-	}
-	result := db.Save(&promo)
-	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Update Success! Hotel "+promo.PromoCode+" now updated")
-	} else {
-		SendGeneralResponse(w, http.StatusBadRequest, "Error Update")
-		return
-	}
+
 }
 
 func InsertPromo(w http.ResponseWriter, r *http.Request) {
-	db := connect()
-	var promo model.Promo
-	err := r.ParseForm()
-	if err != nil {
-		SendGeneralResponse(w, http.StatusBadRequest, "Parse Form Failed")
-		return
-	}
-	promo.PromoCode = r.Form.Get("promo-code")
-	promo.PromoTitle = r.Form.Get("promo-title")
-	promo.PromoDesc = r.Form.Get("promo-desc")
-	promoPercentage, _ := strconv.ParseFloat(r.Form.Get("promo-percentage"), 32)
-	promo.PromoPercentage = float32(promoPercentage)
-	promoMax, _ := strconv.Atoi(r.Form.Get("promo-max"))
-	promo.PromoMax = promoMax
 
-	result := db.Create(&promo)
-	if result.Error != nil {
-		SendGeneralResponse(w, http.StatusBadRequest, "Error Insert")
-		return
-	} else {
-		SendGeneralResponse(w, http.StatusOK, "Insert Success! Promo "+promo.PromoCode+" now can be use")
-	}
 }
 
 func DeletePromo(w http.ResponseWriter, r *http.Request) {
-	db := connect()
-	vars := mux.Vars(r)
-	promoCode := vars["promo-code"]
-	promo := GetPromoByCode(promoCode, w)
-	result := db.Delete(&promo)
-	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Delete Success! Promo "+promo.PromoCode+" now deleted")
-	} else {
-		SendGeneralResponse(w, http.StatusBadRequest, "Error Delete")
-		return
-	}
+
 }
-func GetPromoByCode(code string, w http.ResponseWriter) model.Promo {
-	db := connect()
-	var promo model.Promo
-	result := db.Where("promo_code = ?", code).First(&promo)
-	if (result.RowsAffected != 0) && (result.Error == nil) {
-		return promo
-	} else {
-		SendGeneralResponse(w, http.StatusBadRequest, "Error Get Promo")
-		return promo
-	}
+
+func ConvertPromoTime(promo model.Promo) model.Promo {
+	date_format := "02 January 2006"
+	promo_created, _ := time.Parse(time.RFC3339, promo.PromoCreated)
+	promo.PromoCreated = promo_created.Format(date_format)
+	promo_end, _ := time.Parse(time.RFC3339, promo.PromoEndDate)
+	promo.PromoEndDate = promo_end.Format(date_format)
+	return promo
 }
