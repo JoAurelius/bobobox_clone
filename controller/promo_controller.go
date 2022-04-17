@@ -2,8 +2,11 @@ package controller
 
 import (
 	"bobobox_clone/model"
+	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func GetAllPromos(w http.ResponseWriter, r *http.Request) {
@@ -27,14 +30,71 @@ func GetAllPromos(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePromo(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+
+	vars := mux.Vars(r)
+	PromoCode := vars["promo-code"]
+	err := r.ParseForm()
+	if err != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Parse Form Failed")
+		return
+	}
+
+	var title = r.Form.Get("title")
+	var desc = r.Form.Get("desc")
+	var percentage = r.Form.Get("percentage")
+	var max = r.Form.Get("max")
+	var created = r.Form.Get("created")
+	var endDate = r.Form.Get("endDate")
+	var code = GetPromoByCode(PromoCode, w)
+
+	if title != "" {
+		model.PromoTitle = title
+	}
 
 }
 
 func InsertPromo(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+
+	err := r.ParseForm()
+	if err != nil {
+		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
+		return
+	}
+
+	var promo model.Promo
+	promo.PromoCode = r.Form.Get("promo_code")
+	promo.PromoCreated = r.Form.Get("promo_created")
+	promo.PromoDesc = r.Form.Get("promo_desc")
+	promo.PromoEndDate = r.Form.Get("promo_end_date")
+	promo.PromoMax = r.Form.Get("promo_max")
+	promo.PromoPercentage = r.Form.Get("promo_percentage")
+	promo.PromoTitle = r.Form.Get("promo_title")
+
+	result := db.Select("PromoCode", "PromoCreated", "PromoDesc", "PromoEndDate", "PromoMax", "PromoPercentage", "PromoTitle")
+
+	if result.RowsAffected != 0 {
+		SendGeneralResponse(w, http.StatusOK, "Isert Success! Promo "+promo.PromoTitle+"now available")
+	} else {
+		SendGeneralResponse(w, http.StatusOK, "Error Insert")
+	}
 
 }
 
 func DeletePromo(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+
+	vars := mux.Vars(r)
+	PromoCode := vars["promo-code"]
+	var promo = GetPromoByCode(PromoCode, w)
+	result := db.Delete(&promo)
+
+	if result.RowsAffected != 0 {
+		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+fmt.Sprintf("%d", promo.PromoCode)+" now deleted")
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Delete")
+	}
 
 }
 
