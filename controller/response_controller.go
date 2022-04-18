@@ -121,3 +121,24 @@ func SendRoomsResponse(w http.ResponseWriter, s int, m []model.Room) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+// Respon Income
+func SendIncomeResponse(w http.ResponseWriter, s int, m model.Income) {
+	var response model.IncomeResponse
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.WriteHeader(s)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func SendIncomesResponse(w http.ResponseWriter, s int, m []model.Income) {
+	var response model.IncomesResponse
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.WriteHeader(s)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
