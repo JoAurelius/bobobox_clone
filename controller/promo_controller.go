@@ -48,7 +48,7 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 	var max = r.Form.Get("max")
 	var created = r.Form.Get("created")
 	var endDate = r.Form.Get("endDate")
-	var code = GetPromoByCode(PromoCode, w)
+	var promo = GetPromoAPromo(PromoCode, w, r)
 
 	if title != "" {
 		promo.PromoTitle = title
@@ -122,7 +122,7 @@ func DeletePromo(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	PromoCode := vars["promo-code"]
-	var promo = GetPromoByCode(PromoCode, w)
+	var promo = GetAPromo(PromoCode, w, r)
 	result := db.Delete(&promo)
 
 	if result.RowsAffected != 0 {
@@ -142,9 +142,15 @@ func ConvertPromoTime(promo model.Promo) model.Promo {
 	return promo
 }
 
-func GetPromoByCode(promo_kode string, w http.ResponseWriter) model.Promo {
+func GetAPromo(promo_code string, w http.ResponseWriter, r *http.Request) model.Promo {
 	db := connect()
 	var promo model.Promo
-	db.Select("promo_code", "promo_title", "promo_desc", "promo_percentage", "promo_max", "promo_created", "promo_end_date").Where("promo_kode = ?", promo_kode).Find(&promo)
+	db.Where("promo_code = ?", promo_code).Find(&promo)
+	if promo.PromoCode != "" {
+		promo = ConvertPromoTime(promo)
+	} else {
+		//send error response
+		SendGeneralResponse(w, http.StatusNoContent, "No Promo Found")
+	}
 	return promo
 }
