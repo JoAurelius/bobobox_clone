@@ -18,43 +18,43 @@ func main() {
 	// User
 	r.HandleFunc("/register", controller.Register).Methods("POST") //aman
 	r.HandleFunc("/login/member", controller.Login).Methods("POST")
-	r.HandleFunc("/logout", controller.Logout).Methods("POST")
+	r.HandleFunc("/logout", controller.Authenticate(controller.Logout, 1)).Methods("POST")
 
-	r.HandleFunc("/members/{member-id}/profile", controller.GetMemberProfile).Methods("GET")         //aman
-	r.HandleFunc("/members/{member-id}/edit-profile", controller.UpdateMemberProfile).Methods("PUT") //aman
+	r.HandleFunc("/members/{member-id}/profile", controller.Authenticate(controller.GetMemberProfile, 1)).Methods("GET")         //aman
+	r.HandleFunc("/members/{member-id}/edit-profile", controller.Authenticate(controller.UpdateMemberProfile, 1)).Methods("PUT") //aman
 
 	// Promo -- USER
-	r.HandleFunc("/promos", controller.Authenticate(controller.GetAllPromos, 0)).Methods("GET") //aman
+	r.HandleFunc("/promos", controller.Authenticate(controller.GetAllPromos, 1)).Methods("GET") //aman
 	// Hotel -- ADMIN
-	r.HandleFunc("/promo/{promo-code}", controller.UpdatePromo).Methods("PUT")
-	r.HandleFunc("/promo", controller.InsertPromo).Methods("POST")
-	r.HandleFunc("/promo/{promo-code}", controller.DeletePromo).Methods("DELETE")
+	r.HandleFunc("/promo/{promo-code}", controller.Authenticate(controller.UpdatePromo, 0)).Methods("PUT")
+	r.HandleFunc("/promo", controller.Authenticate(controller.InsertPromo, 0)).Methods("POST")
+	r.HandleFunc("/promo/{promo-code}", controller.Authenticate(controller.DeletePromo, 0)).Methods("DELETE")
 
 	// Hotel -- USER
 	r.HandleFunc("/room-types/{room-type-id}/hotels", controller.Authenticate(controller.GetHotelsByRoomType, 1)).Methods("GET") //aman
 	// Hotel -- ADMIN
-	r.HandleFunc("/hotel", controller.InsertHotel).Methods("POST")              //aman
-	r.HandleFunc("/hotel/{hotel-id}", controller.UpdateHotel).Methods("PUT")    //aman
-	r.HandleFunc("/hotel/{hotel-id}", controller.DeleteHotel).Methods("DELETE") //aman
+	r.HandleFunc("/hotel", controller.Authenticate(controller.InsertHotel, 0)).Methods("POST")              //aman
+	r.HandleFunc("/hotel/{hotel-id}", controller.Authenticate(controller.UpdateHotel, 0)).Methods("PUT")    //aman
+	r.HandleFunc("/hotel/{hotel-id}", controller.Authenticate(controller.DeleteHotel, 0)).Methods("DELETE") //aman
 
 	// Room -- USER
-	r.HandleFunc("/search", controller.GetRoomsByLocationCheckInCheckOut).Methods("GET")
-	r.HandleFunc("/hotels/{hotel-id}/rooms", controller.GetRoomsByHotelId).Methods("GET") //aman
+	r.HandleFunc("/search", controller.Authenticate(controller.GetRoomsByLocationCheckInCheckOut, 1)).Methods("GET")
+	r.HandleFunc("/hotels/{hotel-id}/rooms", controller.Authenticate(controller.GetRoomsByHotelId, 1)).Methods("GET") //aman
 	// Room -- ADMIN
-	r.HandleFunc("/transactions/{transaction-id}/room", controller.GetRoomByTransactionId).Methods("GET") //aman
-	r.HandleFunc("/room", controller.InsertRoom).Methods("POST")                                          //bikin pengecekan lagi
-	r.HandleFunc("/room/{room-id}", controller.DeleteRoom).Methods("DELETE")                              //aman
+	r.HandleFunc("/transactions/{transaction-id}/room", controller.Authenticate(controller.GetRoomByTransactionId, 0)).Methods("GET") //aman
+	r.HandleFunc("/room", controller.Authenticate(controller.InsertRoom, 0)).Methods("POST")                                          //bikin pengecekan lagi
+	r.HandleFunc("/room/{room-id}", controller.Authenticate(controller.DeleteRoom, 0)).Methods("DELETE")                              //aman
 
 	// Room Type -- ADMIN
-	r.HandleFunc("/room-type/{room-type-id}", controller.UpdateRoomTypeDescription).Methods("PUT") //aman
-	r.HandleFunc("/rooms/{room-id}/room-type", controller.UpdateRoomType).Methods("PUT")           //aman
+	r.HandleFunc("/room-type/{room-type-id}", controller.Authenticate(controller.UpdateRoomTypeDescription, 0)).Methods("PUT") //aman
+	r.HandleFunc("/rooms/{room-id}/room-type", controller.Authenticate(controller.UpdateRoomType, 0)).Methods("PUT")           //aman
 
 	// Transaction -- USER
-	r.HandleFunc("/booking", controller.Booking).Methods("POST")                                           //aman
-	r.HandleFunc("/members/{member-id}/transactions", controller.GetTransactionsByMemberId).Methods("GET") //aman
+	r.HandleFunc("/booking", controller.Authenticate(controller.Booking, 1)).Methods("POST")                                           //aman
+	r.HandleFunc("/members/{member-id}/transactions", controller.Authenticate(controller.GetTransactionsByMemberId, 1)).Methods("GET") //aman
 	// Transaction -- ADMIN
-	r.HandleFunc("/members/{member-id}/transactions/{transaction-id}", controller.GetTransactionByMemberId).Methods("GET") //aman
-	r.HandleFunc("/promos/{promo-code}/transactions", controller.GetTransactionsByPromoCode).Methods("GET")                //aman
+	r.HandleFunc("/members/{member-id}/transactions/{transaction-id}", controller.Authenticate(controller.GetTransactionByMemberId, 0)).Methods("GET") //aman
+	r.HandleFunc("/promos/{promo-code}/transactions", controller.Authenticate(controller.GetTransactionsByPromoCode, 0)).Methods("GET")                //aman
 
 	// Income -- ADMIN
 	r.HandleFunc("/income/{hotel-id}", controller.GetIncomeByHotelId).Methods("GET")
