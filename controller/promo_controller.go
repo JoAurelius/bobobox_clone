@@ -44,17 +44,36 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 
 	var title = r.Form.Get("title")
 	var desc = r.Form.Get("desc")
-	var percentage = r.Form.Get("percentage")
-	var max = r.Form.Get("max")
+	var percentage, _ = strconv.ParseFloat((r.Form.Get("promo_percentage")), 32)
+	var max, _ = strconv.Atoi(r.Form.Get("promo_max"))
 	var created = r.Form.Get("created")
 	var endDate = r.Form.Get("endDate")
-	var promo = GetPromoAPromo(PromoCode, w, r)
+	var promo = GetAPromo(PromoCode, w, r)
 
 	if title != "" {
 		promo.PromoTitle = title
 	}
 	if desc != "" {
-		promo.Promo
+		promo.PromoDesc = desc
+	}
+	if percentage != 0 {
+		promo.PromoPercentage = float32(percentage)
+	}
+	if max != 0 {
+		promo.PromoMax = max
+	}
+	if created != "" {
+		promo.PromoCreated = created
+	}
+	if endDate != "" {
+		promo.PromoEndDate = endDate
+	}
+	result := db.Save(&promo)
+
+	if result.RowsAffected != 0 {
+		SendGeneralResponse(w, http.StatusOK, "Update Success! Promo "+fmt.Sprintf("%d", promo.PromoCode)+" now updated")
+	} else {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error ")
 	}
 
 }
@@ -81,27 +100,22 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 		SendGeneralResponse(w, http.StatusNoContent, "Created is required")
 		return
 	}
-
 	if promo.PromoDesc == "" {
 		SendGeneralResponse(w, http.StatusNoContent, "Description is required")
 		return
 	}
-
 	if promo.PromoMax == 0 {
 		SendGeneralResponse(w, http.StatusNoContent, "Max is required")
 		return
 	}
-
 	if promo.PromoTitle == "" {
 		SendGeneralResponse(w, http.StatusNoContent, "Title is required")
 		return
 	}
-
 	if promo.PromoPercentage == 0 {
 		SendGeneralResponse(w, http.StatusNoContent, "Percentage is required")
 		return
 	}
-
 	if promo.PromoEndDate == "" {
 		SendGeneralResponse(w, http.StatusNoContent, "End Date is required")
 		return
