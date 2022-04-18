@@ -1,7 +1,7 @@
 package model
 
 type RoomType struct {
-	RoomTypeID      int    `json:"room_type_id,omitempty"`
+	RoomTypeID      int    `json:"room_type_id,omitempty" gorm:"primaryKey"`
 	RoomType        string `json:"room_type,omitempty"`
 	RoomDescription string `json:"room_description,omitempty"`
 	RoomPrice       int    `json:"room_price,omitempty"`

@@ -38,7 +38,24 @@ func InsertHotel(w http.ResponseWriter, r *http.Request) {
 	hotel.HotelCity = r.Form.Get("city")
 	hotel.HotelPhone = r.Form.Get("phone")
 
-	result := db.Select("hotelName", "hotelCity", "hotelAddress", "hotelPhone").Create(&hotel)
+	if hotel.HotelName == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "Name is required")
+		return
+	}
+	if hotel.HotelCity == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "city is required")
+		return
+	}
+	if hotel.HotelAddress == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "address is required")
+		return
+	}
+	if hotel.HotelPhone == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "phone is required")
+		return
+	}
+
+	result := db.Select("hotel_name", "hotel_city", "hotel_address", "hotel_phone").Create(&hotel)
 
 	if result.RowsAffected != 0 {
 		SendGeneralResponse(w, http.StatusOK, "Insert Success! Hotel "+hotel.HotelName+" now available")
@@ -89,6 +106,12 @@ func DeleteHotel(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	HotelId := vars["hotel-id"]
 	var hotel = GetHotelById(HotelId, w)
+	var rooms []model.Room
+	//find room where hotel ID = hotel_id
+	db.Where("hotel_id = ?", hotel.HotelID).Find(&rooms)
+	for _, room := range rooms {
+		db.Where("room_id = ?", room.RoomID).Delete(&room)
+	}
 	result := db.Delete(&hotel)
 	if result.RowsAffected != 0 {
 		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+fmt.Sprintf("%d", hotel.HotelID)+" now deleted")

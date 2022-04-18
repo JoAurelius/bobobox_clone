@@ -7,56 +7,69 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func main() {
 	r := mux.NewRouter()
 
+	//0 ADMIN, 1 USER
+	r.HandleFunc("/login/admin", controller.LoginAdmin).Methods("POST") //aman
 	// User
-	r.HandleFunc("/register", controller.Register).Methods("POST")
-	r.HandleFunc("/login", controller.Login).Methods("POST")
-	r.HandleFunc("/logout", controller.Logout).Methods("POST")
+	r.HandleFunc("/register", controller.Register).Methods("POST")                         //aman
+	r.HandleFunc("/login/member", controller.Login).Methods("POST")                        //aman
+	r.HandleFunc("/logout", controller.Authenticate(controller.Logout, 1)).Methods("POST") //aman
 
-	r.HandleFunc("/members/{member-id}/profile", controller.GetMemberProfile).Methods("GET")
-	r.HandleFunc("/members/{member-id}/edit-profile", controller.UpdateMemberProfile).Methods("POST")
+	r.HandleFunc("/members/{member-id}/profile", controller.Authenticate(controller.GetMemberProfile, 1)).Methods("GET")         //aman
+	r.HandleFunc("/members/{member-id}/edit-profile", controller.Authenticate(controller.UpdateMemberProfile, 1)).Methods("PUT") //aman
 
-	// Promo
-	r.HandleFunc("/promos", controller.GetAllPromos).Methods("GET")
-	r.HandleFunc("/promo/{promo-code}", controller.UpdatePromo).Methods("PUT")
-	r.HandleFunc("/promo", controller.InsertPromo).Methods("POST")
-	r.HandleFunc("/promo/{promo-code}", controller.DeletePromo).Methods("DELETE")
+	// Promo -- USER
+	r.HandleFunc("/promos", controller.Authenticate(controller.GetAllPromos, 1)).Methods("GET") //aman
+	// Hotel -- ADMIN
+	r.HandleFunc("/promo/{promo-code}", controller.Authenticate(controller.UpdatePromo, 0)).Methods("PUT")
+	r.HandleFunc("/promo", controller.Authenticate(controller.InsertPromo, 0)).Methods("POST")
+	r.HandleFunc("/promo/{promo-code}", controller.Authenticate(controller.DeletePromo, 0)).Methods("DELETE")
 
-	// Hotel
+	// Hotel -- USER
+	r.HandleFunc("/room-types/{room-type-id}/hotels", controller.Authenticate(controller.GetHotelsByRoomType, 1)).Methods("GET") //aman
+	// Hotel -- ADMIN
+	r.HandleFunc("/hotel", controller.Authenticate(controller.InsertHotel, 0)).Methods("POST")              //aman
+	r.HandleFunc("/hotel/{hotel-id}", controller.Authenticate(controller.UpdateHotel, 0)).Methods("PUT")    //aman
+	r.HandleFunc("/hotel/{hotel-id}", controller.Authenticate(controller.DeleteHotel, 0)).Methods("DELETE") //aman
 
-	r.HandleFunc("/room-types/{room-type-id}/hotels", controller.GetHotelsByRoomType).Methods("GET")
-	r.HandleFunc("/hotel", controller.InsertHotel).Methods("POST")
-	r.HandleFunc("/hotel/{hotel-id}", controller.UpdateHotel).Methods("PUT")
-	r.HandleFunc("/hotel/{hotel-id}", controller.DeleteHotel).Methods("DELETE")
+	// Room -- USER
+	r.HandleFunc("/search/room", controller.GetRoomsByLocationCheckInCheckOut).Methods("GET")
+	r.HandleFunc("/hotels/{hotel-id}/rooms", controller.Authenticate(controller.GetRoomsByHotelId, 1)).Methods("GET") //aman
+	// Room -- ADMIN
+	r.HandleFunc("/transactions/{transaction-id}/room", controller.Authenticate(controller.GetRoomByTransactionId, 0)).Methods("GET") //aman
+	r.HandleFunc("/room", controller.Authenticate(controller.InsertRoom, 0)).Methods("POST")                                          //bikin pengecekan lagi
+	r.HandleFunc("/room/{room-id}", controller.Authenticate(controller.DeleteRoom, 0)).Methods("DELETE")                              //aman
 
-	// Room
-	// Help gimana caranya bikin handlefunc query param . . .
-	// r.HandleFunc("/search/room/", controller.GetRoomsByLocationCheckInCheckOut).Methods("GET")
-	r.HandleFunc("/hotels/{hotel-id}/rooms", controller.GetRoomsByHotelId).Methods("GET")
-	r.HandleFunc("/transactions/{transaction-id}/rooms/{room-id}", controller.GetRoomByTransactionId).Methods("GET")
-	r.HandleFunc("/room", controller.InsertRoom).Methods("POST")
-	r.HandleFunc("/room/{room-id}", controller.DeleteRoom).Methods("DELETE")
+	// Room Type -- ADMIN
+	r.HandleFunc("/room-type/{room-type-id}", controller.Authenticate(controller.UpdateRoomTypeDescription, 0)).Methods("PUT") //aman
+	r.HandleFunc("/rooms/{room-id}/room-type", controller.Authenticate(controller.UpdateRoomType, 0)).Methods("PUT")           //aman
 
-	// Room Type
-	r.HandleFunc("/room-type/{room-type-id}", controller.UpdateRoomTypeDescription).Methods("PUT")
-	r.HandleFunc("/room-type/{room-id}", controller.UpdateRoomType).Methods("PUT")
+	// Transaction -- USER
+	r.HandleFunc("/booking", controller.Authenticate(controller.Booking, 1)).Methods("POST")                                           //aman
+	r.HandleFunc("/members/{member-id}/transactions", controller.Authenticate(controller.GetTransactionsByMemberId, 1)).Methods("GET") //aman
+	// Transaction -- ADMIN
+	r.HandleFunc("/members/{member-id}/transactions/{transaction-id}", controller.Authenticate(controller.GetTransactionByMemberId, 0)).Methods("GET") //aman
+	r.HandleFunc("/promos/{promo-code}/transactions", controller.Authenticate(controller.GetTransactionsByPromoCode, 0)).Methods("GET")                //aman
 
-	// Transaction
-	r.HandleFunc("/booking", controller.Booking).Methods("POST")
-	r.HandleFunc("/members/{member-id}/transactions", controller.GetTransactionsByMemberId).Methods("GET")
-	r.HandleFunc("/members/{member-id}/transactions/{transaction-id}", controller.GetTransactionByMemberId).Methods("GET")
-	r.HandleFunc("/promos/{promo-code}/transactions", controller.GetTransactionsByPromoCode).Methods("GET")
-
-	// Income
+	// Income -- ADMIN
 	r.HandleFunc("/income/{hotel-id}", controller.GetIncomeByHotelId).Methods("GET")
 	r.HandleFunc("/income", controller.GetAllIncome).Methods("GET")
+
+	//cors
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowCredentials: true,
+	})
+	handler := corsHandler.Handler(r)
 
 	http.Handle("/", r)
 	fmt.Println("Connected to port 8800")
 	log.Println("Connected to port 8800")
-	log.Fatal(http.ListenAndServe(":8800", r))
+	log.Fatal(http.ListenAndServe(":8800", handler))
 }

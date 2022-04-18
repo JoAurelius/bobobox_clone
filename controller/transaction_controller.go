@@ -91,11 +91,12 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	var roomType model.RoomType
 	var room model.Room
 	var transaction model.Transaction
-
+	var promo model.Promo
 	roomTypeId, _ := strconv.Atoi(r.Form.Get("roomTypeId"))
 	hotelId, _ := strconv.Atoi(r.Form.Get("hotelId"))
 	transaction.MemberID, _ = strconv.Atoi(r.Form.Get("memberId"))
 	PromoCode := r.FormValue("promoCode")
+
 	transaction.CheckinDate = r.Form.Get("checkin")   //format YYYY-MM-DD
 	transaction.CheckoutDate = r.Form.Get("checkout") //format YYYY-MM-DD
 
@@ -126,10 +127,10 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	if PromoCode == "" {
 		transaction.PromoCode = nil
 	} else {
-		var promo model.Promo
 		db.Select("promo_code").Where("promo_code = ?", PromoCode).Find(&promo)
 		if promo.PromoCode != "" {
-			transaction.PromoCode = &PromoCode
+			transaction.PromoCode = &promo.PromoCode
+			promo = GetAPromo(PromoCode, w, r)
 		} else {
 			SendGeneralResponse(w, http.StatusNoContent, "Promo code not available")
 			return
@@ -147,7 +148,12 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	}
 
 	transaction.Duration = getDuration(transaction.CheckinDate, transaction.CheckoutDate)
-	transaction.TotalPrice = transaction.Duration * roomType.RoomPrice
+	price := transaction.Duration * roomType.RoomPrice
+	totalPromo := price * int(promo.PromoPercentage)
+	if totalPromo > promo.PromoMax {
+		totalPromo = promo.PromoMax
+	}
+	transaction.TotalPrice = price - totalPromo
 	transaction.RoomID = room.RoomID
 	transaction.TransactionStatus = 1
 	transaction.TransactionDate = time.Now().Format("2006-01-02")
@@ -155,7 +161,7 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	result := db.Create(&transaction)
 
 	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Insert Success! Transaction "+fmt.Sprintf("%d", transaction.TransactionID)+" has been added")
+		SendGeneralResponse(w, http.StatusOK, "Insert Success! Transaction has been added")
 	} else {
 		SendGeneralResponse(w, http.StatusNoContent, "Error Insert")
 	}
@@ -216,5 +222,11 @@ func checkAnotherTransactions(roomId int, checkintDate, checkoutDate string, db 
 	db.Select("transaction_id").Where("(room_id = ?) AND ((checkin_date BETWEEN ? AND ?) OR (checkout_date BETWEEN ? AND ?))",
 		roomId, checkintDate, OneDayBeforeCO, OneDayAfterCI, checkoutDate).Find(&transaction)
 
+	return transaction
+}
+func GetAllTransaction(w http.ResponseWriter, r *http.Request) []model.Transaction {
+	db := connect()
+	var transaction []model.Transaction
+	db.Find(&transaction)
 	return transaction
 }
