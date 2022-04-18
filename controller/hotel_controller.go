@@ -38,6 +38,23 @@ func InsertHotel(w http.ResponseWriter, r *http.Request) {
 	hotel.HotelCity = r.Form.Get("city")
 	hotel.HotelPhone = r.Form.Get("phone")
 
+	if hotel.HotelName == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "Name is required")
+		return
+	}
+	if hotel.HotelCity == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "city is required")
+		return
+	}
+	if hotel.HotelAddress == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "address is required")
+		return
+	}
+	if hotel.HotelPhone == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "phone is required")
+		return
+	}
+
 	result := db.Select("hotelName", "hotelCity", "hotelAddress", "hotelPhone").Create(&hotel)
 
 	if result.RowsAffected != 0 {
