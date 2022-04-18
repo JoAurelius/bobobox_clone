@@ -10,3 +10,9 @@ type IncomeResponse struct {
 	Message string `json:"message"`
 	Data    Income `json:"data"`
 }
+
+type IncomesResponse struct {
+	Status  int      `json:"status"`
+	Message string   `json:"message"`
+	Data    []Income `json:"data"`
+}

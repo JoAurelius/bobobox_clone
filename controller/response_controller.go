@@ -132,3 +132,13 @@ func SendIncomeResponse(w http.ResponseWriter, s int, m model.Income) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func SendIncomesResponse(w http.ResponseWriter, s int, m []model.Income) {
+	var response model.IncomesResponse
+	response.Status = s
+	response.Message = "Success"
+	response.Data = m
+	w.WriteHeader(s)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
