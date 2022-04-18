@@ -218,3 +218,9 @@ func checkAnotherTransactions(roomId int, checkintDate, checkoutDate string, db 
 
 	return transaction
 }
+func GetAllTransaction(w http.ResponseWriter, r *http.Request) []model.Transaction {
+	db := connect()
+	var transaction []model.Transaction
+	db.Find(&transaction)
+	return transaction
+}

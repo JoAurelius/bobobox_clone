@@ -13,10 +13,36 @@ func GetRoomsByLocationCheckInCheckOut(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetRoomsByHotelId(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	//initiate mux
+	vars := mux.Vars(r)
+	hotelID := vars["hotelID"]
+	var rooms []model.Room
+	//query all room by hotel id
+	result := db.Where("hotel_id = ?", hotelID).Find(&rooms)
+	if result.Error != nil {
+		SendGeneralResponse(w, http.StatusNoContent, "Get Rooms By Hotel ID Failed")
+	} else if len(rooms) > 1 {
+		SendRoomsResponse(w, http.StatusOK, rooms)
+	} else if len(rooms) == 0 {
+		SendRoomResponse(w, http.StatusNoContent, rooms[0])
+	}
 
 }
 
 func GetRoomByTransactionId(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	//initiate mux
+	vars := mux.Vars(r)
+	transactionID := vars["transactionID"]
+	var room model.Room
+	//query all room by transaction id
+	result := db.Where("transaction_id = ?", transactionID).First(&room)
+	if result.Error != nil {
+		SendGeneralResponse(w, http.StatusNoContent, "Get Room By Transaction ID Failed")
+	} else {
+		SendRoomResponse(w, http.StatusOK, room)
+	}
 
 }
 
@@ -96,18 +122,18 @@ func UpdateRoomType(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	//initialize mux
 	vars := mux.Vars(r)
-	ID := vars["roomTypeID"]
+	ID := vars["room-id"]
 	err := r.ParseForm()
 	if err != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
 		return
 	}
 	room := GetRoomTypeByID(ID, w, r)
-	roomType := r.FormValue("roomType")
-	if roomType != "" {
-		room.RoomType = roomType
+	roomTypeID := r.FormValue("roomType")
+	if roomTypeID != "" {
+		room.RoomType = roomTypeID
 	}
-	result := db.Save(&room)
+	result := db.Model(&room).Select("room_type_id").Updates(room.RoomTypeID)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Update Room Type Failed")
 	} else {
