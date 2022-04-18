@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 	"net/mail"
 	"strconv"
@@ -103,7 +104,39 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	err := r.ParseForm()
+	if err != nil {
+		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
+		return
+	}
+	email := r.FormValue("email")
+	password := r.FormValue("password")
 
+	var member model.Member
+	res := db.Find(&member, "member_email=?", email)
+	if res.Error != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Login Failed!")
+		return
+	}
+	if res == nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Email is not registered")
+		return
+	}
+
+	h := sha1.New()
+	h.Write([]byte(password))
+	password = hex.EncodeToString(h.Sum(nil))
+	if err != nil {
+		log.Println(err)
+	}
+	if member.MemberPassword != password {
+		SendGeneralResponse(w, http.StatusBadRequest, "Login Failed! Wrong password")
+		return
+	} else {
+		// generate token ...
+		SendGeneralResponse(w, http.StatusBadRequest, "Login Success! You are logged in as "+member.MemberName)
+	}
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
