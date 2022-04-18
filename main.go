@@ -14,11 +14,11 @@ func main() {
 	r := mux.NewRouter()
 
 	//0 ADMIN, 1 USER
-	r.HandleFunc("/login/admin", controller.LoginAdmin).Methods("POST")
+	r.HandleFunc("/login/admin", controller.LoginAdmin).Methods("POST") //aman
 	// User
-	r.HandleFunc("/register", controller.Register).Methods("POST") //aman
-	r.HandleFunc("/login/member", controller.Login).Methods("POST")
-	r.HandleFunc("/logout", controller.Authenticate(controller.Logout, 1)).Methods("POST")
+	r.HandleFunc("/register", controller.Register).Methods("POST")                         //aman
+	r.HandleFunc("/login/member", controller.Login).Methods("POST")                        //aman
+	r.HandleFunc("/logout", controller.Authenticate(controller.Logout, 1)).Methods("POST") //aman
 
 	r.HandleFunc("/members/{member-id}/profile", controller.Authenticate(controller.GetMemberProfile, 1)).Methods("GET")         //aman
 	r.HandleFunc("/members/{member-id}/edit-profile", controller.Authenticate(controller.UpdateMemberProfile, 1)).Methods("PUT") //aman
@@ -38,7 +38,7 @@ func main() {
 	r.HandleFunc("/hotel/{hotel-id}", controller.Authenticate(controller.DeleteHotel, 0)).Methods("DELETE") //aman
 
 	// Room -- USER
-	r.HandleFunc("/search", controller.Authenticate(controller.GetRoomsByLocationCheckInCheckOut, 1)).Methods("GET")
+	r.HandleFunc("/search/room", controller.GetRoomsByLocationCheckInCheckOut).Methods("GET")
 	r.HandleFunc("/hotels/{hotel-id}/rooms", controller.Authenticate(controller.GetRoomsByHotelId, 1)).Methods("GET") //aman
 	// Room -- ADMIN
 	r.HandleFunc("/transactions/{transaction-id}/room", controller.Authenticate(controller.GetRoomByTransactionId, 0)).Methods("GET") //aman
