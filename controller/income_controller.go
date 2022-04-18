@@ -15,7 +15,7 @@ func GetIncomeByHotelId(w http.ResponseWriter, r *http.Request) {
 	var count int64
 	var transaction model.Transaction
 	db.Model(&transaction).Select("rooms.hotel_id").Joins("join rooms on transactions.room_id = rooms.room_id").Where("rooms.hotel_id=?", hotelID).Count(&count)
-	row := db.Model(&transaction).Select("sum(transactions.total_price) as total, rooms.hotel_id").Joins("join rooms on transactions.room_id = rooms.room_id").Where("rooms.hotel_id=?", hotelID).Group("rooms.hotel_id").Row()
+	row := db.Model(&transaction).Select("sum(transactions.total_price) as total, rooms.hotel_id").Joins("join rooms on transactions.room_id = rooms.room_id").Where("rooms.hotel_id=?", hotelID).Row()
 
 	var total int
 	var id int
