@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bobobox_clone/model"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -16,7 +17,7 @@ func GetRoomsByHotelId(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	//initiate mux
 	vars := mux.Vars(r)
-	hotelID := vars["hotelID"]
+	hotelID := vars["hotel-id"]
 	var rooms []model.Room
 	//query all room by hotel id
 	result := db.Where("hotel_id = ?", hotelID).Find(&rooms)
@@ -34,10 +35,10 @@ func GetRoomByTransactionId(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	//initiate mux
 	vars := mux.Vars(r)
-	transactionID := vars["transactionID"]
+	transactionID := vars["transaction-id"]
 	var room model.Room
 	//query all room by transaction id
-	result := db.Where("transaction_id = ?", transactionID).First(&room)
+	result := db.Where("room_id IN (SELECT room_id FROM transactions WHERE transaction_id = ?)", transactionID).First(&room)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Get Room By Transaction ID Failed")
 	} else {
@@ -49,8 +50,6 @@ func GetRoomByTransactionId(w http.ResponseWriter, r *http.Request) {
 func InsertRoom(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	//initiate mux
-	vars := mux.Vars(r)
-	roomID := vars["hotelID"]
 	err := r.ParseForm()
 	if err != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
@@ -58,17 +57,16 @@ func InsertRoom(w http.ResponseWriter, r *http.Request) {
 	}
 	var room model.Room
 	//convert hotelID to integer
-	room.RoomID, _ = strconv.Atoi(roomID)
 	room.HotelID, _ = strconv.Atoi(r.FormValue("hotelID"))
 	room.RoomNumber = r.FormValue("roomNumber")
 	room.RoomTypeID, _ = strconv.Atoi(r.FormValue("roomTypeID"))
-	room.RoomStatus = r.FormValue("roomStatus")
+	room.RoomStatus, _ = strconv.Atoi(r.FormValue("roomStatus"))
 	//insert new room
-	result := db.Create(&room)
+	result := db.Select("hotel_id", "room_number", "room_type_id", "room_status").Create(&room)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Insert Room Failed")
 	} else {
-		SendGeneralResponse(w, http.StatusOK, "Insert Room Success")
+		SendGeneralResponse(w, http.StatusOK, "Insert Room Success, Room "+fmt.Sprint(room.RoomNumber)+" has been added to Hotel "+fmt.Sprint(room.HotelID))
 	}
 }
 
@@ -76,7 +74,7 @@ func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	//initialize mux
 	vars := mux.Vars(r)
-	roomID := vars["roomID"]
+	roomID := vars["room-id"]
 	result := db.Delete(&model.Room{}, "room_id = ?", roomID)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Delete Room Failed")
@@ -89,7 +87,7 @@ func UpdateRoomTypeDescription(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	//initialize mux
 	vars := mux.Vars(r)
-	ID := vars["roomTypeID"]
+	ID := vars["room-type-id"]
 	err := r.ParseForm()
 	if err != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
@@ -109,7 +107,7 @@ func UpdateRoomTypeDescription(w http.ResponseWriter, r *http.Request) {
 		room.RoomType = roomType
 	}
 
-	result := db.Save(&room)
+	result := db.Where("room_type_id = ?", room.RoomTypeID).Save(&room)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Update Room Type Description Failed")
 	} else {
@@ -128,14 +126,15 @@ func UpdateRoomType(w http.ResponseWriter, r *http.Request) {
 		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
 		return
 	}
-	room := GetRoomTypeByID(ID, w, r)
-	roomTypeID := r.FormValue("roomType")
-	if roomTypeID != "" {
-		room.RoomType = roomTypeID
+	room := GetRoomByRoomID(ID, w, r)
+	roomTypeID, _ := strconv.Atoi(r.FormValue("roomType"))
+	if roomTypeID != 0 {
+		room.RoomTypeID = roomTypeID
 	}
-	result := db.Model(&room).Select("room_type_id").Updates(room.RoomTypeID)
+	result := db.Where("room_id = ?", ID).Save(&room)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Update Room Type Failed")
+		return
 	} else {
 		SendGeneralResponse(w, http.StatusOK, "Update Room Type Success")
 	}

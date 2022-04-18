@@ -55,7 +55,7 @@ func InsertHotel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := db.Select("hotelName", "hotelCity", "hotelAddress", "hotelPhone").Create(&hotel)
+	result := db.Select("hotel_name", "hotel_city", "hotel_address", "hotel_phone").Create(&hotel)
 
 	if result.RowsAffected != 0 {
 		SendGeneralResponse(w, http.StatusOK, "Insert Success! Hotel "+hotel.HotelName+" now available")
@@ -106,6 +106,12 @@ func DeleteHotel(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	HotelId := vars["hotel-id"]
 	var hotel = GetHotelById(HotelId, w)
+	var rooms []model.Room
+	//find room where hotel ID = hotel_id
+	db.Where("hotel_id = ?", hotel.HotelID).Find(&rooms)
+	for _, room := range rooms {
+		db.Where("room_id = ?", room.RoomID).Delete(&room)
+	}
 	result := db.Delete(&hotel)
 	if result.RowsAffected != 0 {
 		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+fmt.Sprintf("%d", hotel.HotelID)+" now deleted")

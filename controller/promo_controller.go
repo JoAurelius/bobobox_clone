@@ -46,3 +46,16 @@ func ConvertPromoTime(promo model.Promo) model.Promo {
 	promo.PromoEndDate = promo_end.Format(date_format)
 	return promo
 }
+
+func GetAPromo(promo_code string, w http.ResponseWriter, r *http.Request) model.Promo {
+	db := connect()
+	var promo model.Promo
+	db.Where("promo_code = ?", promo_code).Find(&promo)
+	if promo.PromoCode != "" {
+		promo = ConvertPromoTime(promo)
+	} else {
+		//send error response
+		SendGeneralResponse(w, http.StatusNoContent, "No Promo Found")
+	}
+	return promo
+}

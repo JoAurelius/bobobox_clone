@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
 	"gopkg.in/gomail.v2"
-	"gorm.io/gorm"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +88,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go db.Create(&member)
-	go SendEmail(member.MemberEmail, member.MemberName)
+	go SendEmail(member.MemberEmail, member.MemberName, "Terima kasih telah melakukan registrasi pada Aplikasi Bobobox", "Bobobox Registration")
 	time.Sleep(500 * time.Millisecond)
 
 	var lastInsert model.Member
@@ -107,13 +107,26 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	// resetUserToken(w)
+	resetUserToken(w)
 
 	SendGeneralResponse(w, 200, "logout success")
 }
 
 func GetMemberProfile(w http.ResponseWriter, r *http.Request) {
+	db := connect()
 
+	var member model.Member
+	//mux
+	vars := mux.Vars(r)
+	memberID := vars["member-id"]
+
+	result := db.Select("member_name, member_phone, member_email").Where("member_id = ?", memberID).Find(&member)
+
+	if result.Error != nil {
+		SendGeneralResponse(w, http.StatusNoContent, "Member not found")
+	} else {
+		SendMemberResponse(w, http.StatusOK, member)
+	}
 }
 func GetMemberById(memberID string, w http.ResponseWriter, r *http.Request) model.Member {
 	db := connect()
@@ -132,7 +145,7 @@ func GetMemberById(memberID string, w http.ResponseWriter, r *http.Request) mode
 func UpdateMemberProfile(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	vars := mux.Vars(r)
-	memberID := vars["memberID"]
+	memberID := vars["member-id"]
 	member := GetMemberById(memberID, w, r)
 	err := r.ParseForm()
 	if err != nil {
@@ -166,27 +179,30 @@ func UpdateMemberProfile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SendEmail(email, name string) {
+func SendEmail(email, name string, body string, subject string) {
 	d := gomail.NewDialer("smtp.gmail.com", 587, "stevianianggila60@gmail.com", "NakNik919")
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", "stevianianggila60@gmail.com")
 	m.SetAddressHeader("To", email, name)
-	m.SetHeader("Subject", "Konfirmasi Registrasi")
-	m.SetBody("text/html", fmt.Sprintf("Terima kasih telah melakukan registrasi pada Aplikasi Bobobox"))
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", fmt.Sprintf(body))
 	if err := d.DialAndSend(m); err != nil {
 		fmt.Print(err)
 		panic(err)
 	}
 	m.Reset()
 }
-
-func addNewMember(member model.Member, db *gorm.DB, w http.ResponseWriter) {
-	result := db.Create(&member)
-
-	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Insert Success! Member "+member.MemberName+" has been added")
-	} else {
-		SendGeneralResponse(w, http.StatusNoContent, "Error Insert")
-	}
+func SendNewsletter() {
+	db := connect()
+	var members []model.Member
+	db.Find(&members)
+	s := gocron.NewScheduler(time.UTC)
+	s.Every(30).Day().Do(func() {
+		for _, member := range members {
+			SendEmail(member.MemberEmail, member.MemberName,
+				"Hi, "+member.MemberName+"!  This is a newsletter from Bobobox.  Happy Shopping!  Best Regards, Bobobox",
+				"Bobobox Newsletter")
+		}
+	})
 }
