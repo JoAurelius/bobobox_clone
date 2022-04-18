@@ -10,18 +10,18 @@ import (
 )
 
 func GetRoomsByLocationCheckInCheckOut(w http.ResponseWriter, r *http.Request) {
-	//tolong dicek lagi belom bisa ini
+	//GINI GA JO MKSDNYA??
 	db := connect()
-	roomID := r.URL.Query()["room-id"]
-	RoomID, _ := strconv.Atoi(roomID[0])
+	roomID, _ := strconv.Atoi(r.URL.Query().Get("room-id"))
 	checkIn := r.URL.Query()["check-in"]
 	checkOut := r.URL.Query()["check-out"]
-	var rooms []model.Room
-	transactions := checkAnotherTransactions(RoomID, checkIn[0], checkOut[0], db)
+	var room model.Room
+	db.Preload("Hotel").Preload("RoomType").Where("room_id = ?", roomID).Find(&room)
+	transactions := checkAnotherTransactions(roomID, checkIn[0], checkOut[0], db)
 	if len(transactions) > 0 {
-		SendGeneralResponse(w, http.StatusNoContent, "Get Rooms By Location Check In Check Out Failed")
+		SendGeneralResponse(w, http.StatusNoContent, "Room is not available")
 	} else {
-		SendRoomsResponse(w, http.StatusOK, rooms)
+		SendRoomResponse(w, http.StatusOK, room)
 	}
 }
 

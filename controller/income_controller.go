@@ -3,6 +3,7 @@ package controller
 import (
 	"bobobox_clone/model"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -22,6 +23,7 @@ func GetIncomeByHotelId(w http.ResponseWriter, r *http.Request) {
 	row.Scan(&total, &id)
 
 	var income model.Income
+	income.HotelID, _ = strconv.Atoi(hotelID)
 	income.TotalTransactions = int(count)
 	income.TotalIncome = total
 	SendIncomeResponse(w, http.StatusOK, income)
@@ -48,6 +50,7 @@ func GetAllIncome(w http.ResponseWriter, r *http.Request) {
 		var count int64
 		db.Model(&transaction).Select("rooms.hotel_id").Joins("join rooms on transactions.room_id = rooms.room_id").Where("rooms.hotel_id=?", id).Count(&count)
 
+		income.HotelID = id
 		income.TotalTransactions = int(count)
 		income.TotalIncome = total
 		incomes = append(incomes, income)
