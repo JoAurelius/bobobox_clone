@@ -1,7 +1,8 @@
 package model
 
 type Admin struct {
-	AdminID       string `json:"admin_id,omitempty"`
+	AdminID       int    `json:"admin_id,omitempty"`
+	AdminName     string `json:"admin_name,omitempty"`
 	AdminPassword string `json:"admin_password,omitempty"`
 }
 

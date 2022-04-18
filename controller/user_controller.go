@@ -130,8 +130,38 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		SendGeneralResponse(w, http.StatusBadRequest, "Login Failed! Wrong password")
 		return
 	} else {
-		// generate token ...
+		generateToken(w, member.MemberID, member.MemberName, 1)
 		SendGeneralResponse(w, http.StatusBadRequest, "Login Success! You are logged in as "+member.MemberName)
+	}
+}
+
+func LoginAdmin(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	err := r.ParseForm()
+	if err != nil {
+		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
+		return
+	}
+	ID := r.FormValue("id")
+	password := r.FormValue("password")
+
+	var admin model.Admin
+	res := db.Find(&admin, "admin_id=?", ID)
+	if res.Error != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Login Failed!")
+		return
+	}
+	if res == nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Email is not registered")
+		return
+	}
+
+	if admin.AdminPassword != password {
+		SendGeneralResponse(w, http.StatusBadRequest, "Login Failed! Wrong password")
+		return
+	} else {
+		generateToken(w, admin.AdminID, admin.AdminName, 0)
+		SendGeneralResponse(w, http.StatusBadRequest, "Login Success! You are logged in as admin")
 	}
 }
 
