@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"net/http"
 	"net/mail"
 	"strconv"
@@ -127,9 +126,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	h := sha1.New()
 	h.Write([]byte(password))
 	password = hex.EncodeToString(h.Sum(nil))
-	if err != nil {
-		log.Println(err)
-	}
 	if member.MemberPassword != password {
 		SendGeneralResponse(w, http.StatusBadRequest, "Login Failed! Wrong password")
 		return
