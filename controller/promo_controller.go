@@ -4,6 +4,7 @@ import (
 	"bobobox_clone/model"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -35,6 +36,7 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	PromoCode := vars["promo-code"]
 	err := r.ParseForm()
+
 	if err != nil {
 		SendGeneralResponse(w, http.StatusBadRequest, "Parse Form Failed")
 		return
@@ -49,7 +51,10 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 	var code = GetPromoByCode(PromoCode, w)
 
 	if title != "" {
-		model.PromoTitle = title
+		promo.PromoTitle = title
+	}
+	if desc != "" {
+		promo.Promo
 	}
 
 }
@@ -64,18 +69,48 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var promo model.Promo
-	promo.PromoCode = r.Form.Get("promo_code")
 	promo.PromoCreated = r.Form.Get("promo_created")
 	promo.PromoDesc = r.Form.Get("promo_desc")
 	promo.PromoEndDate = r.Form.Get("promo_end_date")
-	promo.PromoMax = r.Form.Get("promo_max")
-	promo.PromoPercentage = r.Form.Get("promo_percentage")
+	promo.PromoMax, _ = strconv.Atoi(r.Form.Get("promo_max"))
+	percentage, _ := strconv.ParseFloat((r.Form.Get("promo_percentage")), 32)
+	promo.PromoPercentage = float32(percentage)
 	promo.PromoTitle = r.Form.Get("promo_title")
 
-	result := db.Select("PromoCode", "PromoCreated", "PromoDesc", "PromoEndDate", "PromoMax", "PromoPercentage", "PromoTitle")
+	if promo.PromoCreated == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "Created is required")
+		return
+	}
+
+	if promo.PromoDesc == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "Description is required")
+		return
+	}
+
+	if promo.PromoMax == 0 {
+		SendGeneralResponse(w, http.StatusNoContent, "Max is required")
+		return
+	}
+
+	if promo.PromoTitle == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "Title is required")
+		return
+	}
+
+	if promo.PromoPercentage == 0 {
+		SendGeneralResponse(w, http.StatusNoContent, "Percentage is required")
+		return
+	}
+
+	if promo.PromoEndDate == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "End Date is required")
+		return
+	}
+
+	result := db.Select("PromoCode", "PromoCreated", "PromoDesc", "PromoEndDate", "PromoMax", "PromoPercentage", "PromoTitle").Create(&promo)
 
 	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Isert Success! Promo "+promo.PromoTitle+"now available")
+		SendGeneralResponse(w, http.StatusOK, "Insert Success! Promo "+promo.PromoTitle+"now available")
 	} else {
 		SendGeneralResponse(w, http.StatusOK, "Error Insert")
 	}
@@ -104,5 +139,12 @@ func ConvertPromoTime(promo model.Promo) model.Promo {
 	promo.PromoCreated = promo_created.Format(date_format)
 	promo_end, _ := time.Parse(time.RFC3339, promo.PromoEndDate)
 	promo.PromoEndDate = promo_end.Format(date_format)
+	return promo
+}
+
+func GetPromoByCode(promo_kode string, w http.ResponseWriter) model.Promo {
+	db := connect()
+	var promo model.Promo
+	db.Select("promo_code", "promo_title", "promo_desc", "promo_percentage", "promo_max", "promo_created", "promo_end_date").Where("promo_kode = ?", promo_kode).Find(&promo)
 	return promo
 }
