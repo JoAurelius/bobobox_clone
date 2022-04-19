@@ -148,6 +148,13 @@ func LoginAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	ID := r.FormValue("id")
 	password := r.FormValue("password")
+	h := sha1.New()
+	_, err = h.Write([]byte(password))
+	if err != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Hashing")
+		return
+	}
+	password = hex.EncodeToString(h.Sum(nil))
 
 	var admin model.Admin
 	res := db.Find(&admin, "admin_id=?", ID)
