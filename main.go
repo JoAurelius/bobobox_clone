@@ -57,8 +57,8 @@ func main() {
 	r.HandleFunc("/promos/{promo-code}/transactions", controller.Authenticate(controller.GetTransactionsByPromoCode, 0)).Methods("GET")                //aman
 
 	// Income -- ADMIN
-	r.HandleFunc("/income/{hotel-id}", controller.GetIncomeByHotelId).Methods("GET")
-	r.HandleFunc("/income", controller.GetAllIncome).Methods("GET")
+	r.HandleFunc("/income/{hotel-id}", controller.Authenticate(controller.GetIncomeByHotelId, 0)).Methods("GET")
+	r.HandleFunc("/income", controller.Authenticate(controller.GetAllIncome, 0)).Methods("GET")
 
 	//cors
 	corsHandler := cors.New(cors.Options{
