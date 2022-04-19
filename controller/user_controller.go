@@ -198,25 +198,18 @@ func GetMemberProfile(w http.ResponseWriter, r *http.Request) {
 		SendMemberResponse(w, http.StatusOK, member)
 	}
 }
-func GetMemberById(memberID string, w http.ResponseWriter, r *http.Request) model.Member {
-	db := connect()
-
-	var member model.Member
-	db.Where("member_id = ?", memberID).First(&member)
-
-	if member.MemberID == 0 {
-		SendGeneralResponse(w, http.StatusNoContent, "Member not found")
-	} else {
-		SendMemberResponse(w, http.StatusOK, member)
-	}
-	return member
-}
 
 func UpdateMemberProfile(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	vars := mux.Vars(r)
 	memberID := vars["member-id"]
-	member := GetMemberById(memberID, w, r)
+
+	var member model.Member
+	res := db.Where("member_id = ?", memberID).First(&member)
+	if res.Error != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Update Failed")
+		return
+	}
 	err := r.ParseForm()
 	if err != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Parse Form Failed")
@@ -243,7 +236,7 @@ func UpdateMemberProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	result := db.Save(&member)
 	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Update MemberSuccess")
+		SendMemberResponse(w, http.StatusOK, member)
 	} else {
 		SendGeneralResponse(w, http.StatusBadRequest, "Error Update")
 	}
