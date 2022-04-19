@@ -5,7 +5,7 @@ type Member struct {
 	MemberName           string `json:"member_name,omitempty"`
 	MemberPhone          string `json:"member_phone,omitempty"`
 	MemberEmail          string `json:"member_email,omitempty"`
-	MemberPassword       string `json:"member_password,omitempty"`
+	MemberPassword       string `json:"-"`
 	MemberProfilePicture string `json:"member_profile_picture,omitempty"`
 }
 

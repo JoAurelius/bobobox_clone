@@ -190,7 +190,7 @@ func GetMemberProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	memberID := vars["member-id"]
 
-	db.Select("member_name, member_phone, member_email").Where("member_id = ?", memberID).Find(&member)
+	db.Where("member_id = ?", memberID).Find(&member)
 
 	if member.MemberID == 0 {
 		SendGeneralResponse(w, http.StatusNoContent, "Member not found")
