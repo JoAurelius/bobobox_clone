@@ -138,18 +138,32 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db.Where("room_type_id = ? ", roomTypeId).Find(&roomType)
-	db.Select("room_id").Where("hotel_id = ? AND room_type_id = ?", hotelId, roomTypeId).Find(&room)
+	//cari kamar di hotel dan room type yang diminta dan statusnya 1 (tersedia)
+	db.Select("room_id").Where("hotel_id = ? AND room_type_id = ? AND room_status = 1", hotelId, roomTypeId).Find(&room)
 
-	anothersTransaction := checkAnotherTransactions(room.RoomID, transaction.CheckinDate, transaction.CheckoutDate, db)
+	//jika kamar tidak ditemukan, cek kamar yang statusnya 2 (dibooking), lalu cek ke transaksi tanggal checkin dan checkoutnya bentrok ga
+	if room.RoomID == 0 {
+		var roomForCheck []model.Room
+		db.Select("room_id").Where("hotel_id = ? AND room_type_id = ? AND room_status = 2", hotelId, roomTypeId).Find(&roomForCheck)
+		for i := 0; i < len(roomForCheck); i++ {
+			anothersTransaction := checkAnotherTransactions(roomForCheck[i].RoomID, transaction.CheckinDate, transaction.CheckoutDate, db)
+			//jika ada kamar yang udh dibooking tapi tanggalnya ga bentrok, tetap bisa melakukan booking
+			if len(anothersTransaction) == 0 {
+				room.RoomID = roomForCheck[i].RoomID
+				break
+			}
+		}
+	}
 
-	if len(anothersTransaction) >= 1 {
-		SendGeneralResponse(w, http.StatusNoContent, "Pemesanan di tanggal tersebut tidak tersedia")
+	//kalau kamar tetap tidak ditemukan (tanggalnya bentrok), send response.
+	if room.RoomID == 0 {
+		SendGeneralResponse(w, http.StatusNoContent, "Pemesanan di tanggal tersebut tidak tersedia!")
 		return
 	}
 
 	transaction.Duration = getDuration(transaction.CheckinDate, transaction.CheckoutDate)
 	price := transaction.Duration * roomType.RoomPrice
-	totalPromo := price * int(promo.PromoPercentage)
+	totalPromo := price * int(promo.PromoPercentage) / 100
 	if totalPromo > promo.PromoMax {
 		totalPromo = promo.PromoMax
 	}
@@ -161,6 +175,7 @@ func Booking(w http.ResponseWriter, r *http.Request) {
 	result := db.Create(&transaction)
 
 	if result.RowsAffected != 0 {
+		db.Model(&room).Where("room_id = ?", transaction.RoomID).Update("room_status", "2")
 		SendGeneralResponse(w, http.StatusOK, "Insert Success! Transaction has been added")
 	} else {
 		SendGeneralResponse(w, http.StatusNoContent, "Error Insert")
