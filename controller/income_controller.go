@@ -20,7 +20,10 @@ func GetIncomeByHotelId(w http.ResponseWriter, r *http.Request) {
 
 	var total int
 	var id int
-	row.Scan(&total, &id)
+	if err := row.Scan(&total, &id); err != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Scan")
+		return
+	}
 
 	var income model.Income
 	income.HotelID, _ = strconv.Atoi(hotelID)
@@ -46,6 +49,10 @@ func GetAllIncome(w http.ResponseWriter, r *http.Request) {
 		var total int
 		var id int
 		rows.Scan(&total, &id)
+		if err := rows.Scan(&total, &id); err != nil {
+			SendGeneralResponse(w, http.StatusBadRequest, "Error Scan")
+			return
+		}
 
 		var count int64
 		db.Model(&transaction).Select("rooms.hotel_id").Joins("join rooms on transactions.room_id = rooms.room_id").Where("rooms.hotel_id=?", id).Count(&count)
