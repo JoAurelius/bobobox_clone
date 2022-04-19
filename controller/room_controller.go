@@ -32,13 +32,15 @@ func GetRoomsByHotelId(w http.ResponseWriter, r *http.Request) {
 	hotelID := vars["hotel-id"]
 	var rooms []model.Room
 	//query all room by hotel id
-	result := db.Where("hotel_id = ?", hotelID).Find(&rooms)
+	result := db.Preload("RoomType").Where("hotel_id = ?", hotelID).Find(&rooms)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Get Rooms By Hotel ID Failed")
 	} else if len(rooms) > 1 {
 		SendRoomsResponse(w, http.StatusOK, rooms)
 	} else if len(rooms) == 1 {
 		SendRoomResponse(w, http.StatusOK, rooms[0])
+	} else if len(rooms) == 0 {
+		SendGeneralResponse(w, http.StatusOK, "No Room Found")
 	}
 
 }
@@ -50,7 +52,7 @@ func GetRoomByTransactionId(w http.ResponseWriter, r *http.Request) {
 	transactionID := vars["transaction-id"]
 	var room model.Room
 	//query all room by transaction id
-	result := db.Where("room_id IN (SELECT room_id FROM transactions WHERE transaction_id = ?)", transactionID).First(&room)
+	result := db.Preload("RoomType").Preload("Hotel").Where("room_id IN (SELECT room_id FROM transactions WHERE transaction_id = ?)", transactionID).First(&room)
 	if result.Error != nil {
 		SendGeneralResponse(w, http.StatusNoContent, "Get Room By Transaction ID Failed")
 	} else {
