@@ -37,8 +37,8 @@ func GetRoomsByHotelId(w http.ResponseWriter, r *http.Request) {
 		SendGeneralResponse(w, http.StatusNoContent, "Get Rooms By Hotel ID Failed")
 	} else if len(rooms) > 1 {
 		SendRoomsResponse(w, http.StatusOK, rooms)
-	} else if len(rooms) == 0 {
-		SendRoomResponse(w, http.StatusNoContent, rooms[0])
+	} else if len(rooms) == 1 {
+		SendRoomResponse(w, http.StatusOK, rooms[0])
 	}
 
 }

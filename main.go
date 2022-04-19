@@ -16,9 +16,9 @@ func main() {
 	//0 ADMIN, 1 USER
 	r.HandleFunc("/login/admin", controller.LoginAdmin).Methods("POST") //aman
 	// User
-	r.HandleFunc("/register", controller.Register).Methods("POST")                         //aman
-	r.HandleFunc("/login/member", controller.Login).Methods("POST")                        //aman
-	r.HandleFunc("/logout", controller.Authenticate(controller.Logout, 1)).Methods("POST") //aman
+	r.HandleFunc("/register", controller.Register).Methods("POST")  //aman
+	r.HandleFunc("/login/member", controller.Login).Methods("POST") //aman
+	r.HandleFunc("/logout", controller.Logout).Methods("POST")      //aman
 
 	r.HandleFunc("/members/{member-id}/profile", controller.Authenticate(controller.GetMemberProfile, 1)).Methods("GET")         //aman
 	r.HandleFunc("/members/{member-id}/edit-profile", controller.Authenticate(controller.UpdateMemberProfile, 1)).Methods("PUT") //aman
