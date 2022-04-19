@@ -10,7 +10,6 @@ import (
 )
 
 func GetRoomsByLocationCheckInCheckOut(w http.ResponseWriter, r *http.Request) {
-	//GINI GA JO MKSDNYA??
 	db := connect()
 	roomID, _ := strconv.Atoi(r.URL.Query().Get("room-id"))
 	checkIn := r.URL.Query()["check-in"]
