@@ -2,7 +2,6 @@ package controller
 
 import (
 	"bobobox_clone/model"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -71,7 +70,7 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 	result := db.Save(&promo)
 
 	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Update Success! Promo "+fmt.Sprintf("%d", promo.PromoCode)+" now updated")
+		SendGeneralResponse(w, http.StatusOK, "Update Success! Promo "+promo.PromoCode+" now updated")
 	} else {
 		SendGeneralResponse(w, http.StatusBadRequest, "Error ")
 	}
@@ -140,7 +139,7 @@ func DeletePromo(w http.ResponseWriter, r *http.Request) {
 	result := db.Delete(&promo)
 
 	if result.RowsAffected != 0 {
-		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+fmt.Sprintf("%d", promo.PromoCode)+" now deleted")
+		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+promo.PromoCode+" now deleted")
 	} else {
 		SendGeneralResponse(w, http.StatusBadRequest, "Error Delete")
 	}

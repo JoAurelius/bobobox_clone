@@ -124,7 +124,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h := sha1.New()
-	h.Write([]byte(password))
+	_, err = h.Write([]byte(password))
+	if err != nil {
+		SendGeneralResponse(w, http.StatusBadRequest, "Error Hashing")
+		return
+	}
 	password = hex.EncodeToString(h.Sum(nil))
 	if member.MemberPassword != password {
 		SendGeneralResponse(w, http.StatusBadRequest, "Login Failed! Wrong password")
@@ -245,7 +249,7 @@ func SendEmail(email, name string, body string, subject string) {
 	m.SetHeader("From", "stevianianggila60@gmail.com")
 	m.SetAddressHeader("To", email, name)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", fmt.Sprintf(body))
+	m.SetBody("text/html", body)
 	if err := d.DialAndSend(m); err != nil {
 		fmt.Print(err)
 		panic(err)
