@@ -226,7 +226,7 @@ func UpdateMemberProfile(w http.ResponseWriter, r *http.Request) {
 		member.MemberName = r.FormValue("name")
 	}
 	if r.FormValue("phone") != "" && len(r.FormValue("phone")) == 12 {
-		if _, err := strconv.Atoi(r.FormValue("phone")); err != nil {
+		if _, err := strconv.Atoi(r.FormValue("phone")); err == nil {
 			member.MemberPhone = r.FormValue("phone")
 		}
 	}
