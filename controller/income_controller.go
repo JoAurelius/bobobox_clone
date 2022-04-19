@@ -42,7 +42,6 @@ func GetAllIncome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i := 0
 	var incomes []model.Income
 	var income model.Income
 	for rows.Next() {
@@ -61,7 +60,6 @@ func GetAllIncome(w http.ResponseWriter, r *http.Request) {
 		income.TotalTransactions = int(count)
 		income.TotalIncome = total
 		incomes = append(incomes, income)
-		i++
 	}
 	SendIncomesResponse(w, http.StatusOK, incomes)
 }
