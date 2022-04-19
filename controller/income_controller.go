@@ -48,7 +48,6 @@ func GetAllIncome(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var total int
 		var id int
-		angka := 132
 		rows.Scan(&total, &id)
 		if err := rows.Scan(&total, &id); err != nil {
 			SendGeneralResponse(w, http.StatusBadRequest, "Error Scan")
