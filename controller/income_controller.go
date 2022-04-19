@@ -48,10 +48,7 @@ func GetAllIncome(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var total int
 		var id int
-		if err := rows.Scan(&total, &id); err != nil {
-			SendGeneralResponse(w, http.StatusBadRequest, "Error Scan")
-			return
-		}
+		rows.Scan(&total, &id)
 
 		var count int64
 		db.Model(&transaction).Select("rooms.hotel_id").Joins("join rooms on transactions.room_id = rooms.room_id").Where("rooms.hotel_id=?", id).Count(&count)
