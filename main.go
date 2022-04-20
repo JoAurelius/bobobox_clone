@@ -42,8 +42,8 @@ func main() {
 	r.HandleFunc("/hotels/{hotel-id}/rooms", controller.Authenticate(controller.GetRoomsByHotelId, 1)).Methods("GET") //aman
 	// Room -- ADMIN
 	r.HandleFunc("/transactions/{transaction-id}/room", controller.Authenticate(controller.GetRoomByTransactionId, 0)).Methods("GET") //aman
-	r.HandleFunc("/room", controller.Authenticate(controller.InsertRoom, 0)).Methods("POST")                                          //bikin pengecekan lagi
-	r.HandleFunc("/room/{room-id}", controller.Authenticate(controller.DeleteRoom, 0)).Methods("DELETE")                              //aman
+	r.HandleFunc("/room", controller.Authenticate(controller.InsertRoom, 0)).Methods("POST")
+	r.HandleFunc("/room/{room-id}", controller.Authenticate(controller.DeleteRoom, 0)).Methods("DELETE") //aman
 
 	// Room Type -- ADMIN
 	r.HandleFunc("/room-type/{room-type-id}", controller.Authenticate(controller.UpdateRoomTypeDescription, 0)).Methods("PUT") //aman
