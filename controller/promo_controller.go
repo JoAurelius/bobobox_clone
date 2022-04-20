@@ -95,7 +95,9 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 	percentage, _ := strconv.ParseFloat((r.Form.Get("promo_percentage")), 32)
 	promo.PromoPercentage = float32(percentage)
 	promo.PromoTitle = r.Form.Get("promo_title")
-
+	if promo.PromoCode == "" {
+		SendGeneralResponse(w, http.StatusNoContent, "Code is required")
+	}
 	if promo.PromoCreated == "" {
 		SendGeneralResponse(w, http.StatusNoContent, "Created is required")
 		return
