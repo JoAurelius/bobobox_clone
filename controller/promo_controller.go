@@ -87,6 +87,7 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var promo model.Promo
+	promo.PromoCode = r.Form.Get("promo_code")
 	promo.PromoCreated = r.Form.Get("promo_created")
 	promo.PromoDesc = r.Form.Get("promo_desc")
 	promo.PromoEndDate = r.Form.Get("promo_end_date")
@@ -95,6 +96,10 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 	promo.PromoPercentage = float32(percentage)
 	promo.PromoTitle = r.Form.Get("promo_title")
 
+	if promo.PromoCode = "" {
+		SendGeneralResponse(w, http.StatusNoContent, "Code is required")
+		return		
+	}
 	if promo.PromoCreated == "" {
 		SendGeneralResponse(w, http.StatusNoContent, "Created is required")
 		return
