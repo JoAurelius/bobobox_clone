@@ -67,7 +67,7 @@ func UpdatePromo(w http.ResponseWriter, r *http.Request) {
 	if endDate != "" {
 		promo.PromoEndDate = endDate
 	}
-	result := db.Save(&promo)
+	result := db.Where("promo_code = ?", PromoCode).Save(&promo)
 
 	if result.RowsAffected != 0 {
 		SendGeneralResponse(w, http.StatusOK, "Update Success! Promo "+promo.PromoCode+" now updated")
@@ -87,6 +87,7 @@ func InsertPromo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var promo model.Promo
+	promo.PromoCode = r.Form.Get("promo_code")
 	promo.PromoCreated = r.Form.Get("promo_created")
 	promo.PromoDesc = r.Form.Get("promo_desc")
 	promo.PromoEndDate = r.Form.Get("promo_end_date")
@@ -136,7 +137,7 @@ func DeletePromo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	PromoCode := vars["promo-code"]
 	var promo = GetAPromo(PromoCode, w, r)
-	result := db.Delete(&promo)
+	result := db.Where("promo_code = ?", PromoCode).Delete(&promo)
 
 	if result.RowsAffected != 0 {
 		SendGeneralResponse(w, http.StatusOK, "Delete Success! Hotel "+promo.PromoCode+" now deleted")
